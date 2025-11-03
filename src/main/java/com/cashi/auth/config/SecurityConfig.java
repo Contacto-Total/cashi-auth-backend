@@ -37,8 +37,8 @@ public class SecurityConfig {
                         // TEMPORAL: Todos los endpoints públicos para pruebas
                         .anyRequest().permitAll()
 
-                        // TODO: Descomentar después de las pruebas
-                        /*
+
+                        
                         // Endpoints públicos
                         .requestMatchers(
                                 "/api/auth/login",
@@ -56,7 +56,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/auth/validate").permitAll()
                         // Todo lo demás requiere autenticación
                         .anyRequest().authenticated()
-                        */
+                        
                 )
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
