@@ -32,13 +32,8 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(AbstractHttpConfigurer::disable)
-                .cors(cors -> cors.configure(http))
+                .cors(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
-                        // TEMPORAL: Todos los endpoints públicos para pruebas
-                        .anyRequest().permitAll()
-
-
-                        
                         // Endpoints públicos
                         .requestMatchers(
                                 "/api/auth/login",
@@ -56,7 +51,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/auth/validate").permitAll()
                         // Todo lo demás requiere autenticación
                         .anyRequest().authenticated()
-                        
+
                 )
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
