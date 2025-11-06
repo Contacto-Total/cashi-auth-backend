@@ -42,6 +42,7 @@ public class SecurityConfig {
                                 "/api/auth/refresh-token",
                                 "/api/configuracion/sesion",
                                 "/api/configuracion/sesion/*",
+                                "/api/agents/*/status",
                                 "/api-docs/**",
                                 "/swagger-ui/**",
                                 "/swagger-ui.html",
