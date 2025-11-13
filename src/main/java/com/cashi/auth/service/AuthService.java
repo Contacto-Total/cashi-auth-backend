@@ -269,6 +269,21 @@ public class AuthService {
                 .filter(auth -> !auth.startsWith("ROLE_"))
                 .collect(Collectors.toSet());
 
+        // Obtener asignación del rol (tenant/cartera/subcartera)
+        Long tenantId = null;
+        Long portfolioId = null;
+        Long subPortfolioId = null;
+
+        if (!usuario.getRoles().isEmpty()) {
+            Rol primerRol = usuario.getRoles().iterator().next();
+            if (!primerRol.getAsignaciones().isEmpty()) {
+                RolAsignacion asignacion = primerRol.getAsignaciones().iterator().next();
+                tenantId = asignacion.getTenantId();
+                portfolioId = asignacion.getPortfolioId();
+                subPortfolioId = asignacion.getSubPortfolioId();
+            }
+        }
+
         return AuthResponse.builder()
                 .idUsuario(usuario.getIdUsuario())
                 .nombreUsuario(usuario.getNombreUsuario())
@@ -281,6 +296,9 @@ public class AuthService {
                 .expiresIn(jwtUtil.getExpirationTime())
                 .roles(roles)
                 .permisos(permisos)
+                .tenantId(tenantId)
+                .portfolioId(portfolioId)
+                .subPortfolioId(subPortfolioId)
                 .mensaje("Autenticación exitosa")
                 .build();
     }

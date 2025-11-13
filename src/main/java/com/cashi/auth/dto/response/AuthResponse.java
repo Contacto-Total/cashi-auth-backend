@@ -25,6 +25,11 @@ public class AuthResponse {
     private Set<String> roles;
     private Set<String> permisos;
 
+    // Asignación del rol (tenant/cartera/subcartera)
+    private Long tenantId;
+    private Long portfolioId;
+    private Long subPortfolioId;
+
     @Builder.Default
     private String mensaje = "Autenticación exitosa";
 }

@@ -14,9 +14,9 @@ import java.util.Optional;
 @Repository
 public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
 
-    // Query con EntityGraph para forzar carga de roles y permisos
+    // Query con EntityGraph para forzar carga de roles, permisos y asignaciones
     @Query("SELECT u FROM Usuario u WHERE u.nombreUsuario = :nombreUsuario")
-    @EntityGraph(attributePaths = {"roles", "roles.permisos"})
+    @EntityGraph(attributePaths = {"roles", "roles.permisos", "roles.asignaciones"})
     Optional<Usuario> findByNombreUsuarioWithRoles(@Param("nombreUsuario") String nombreUsuario);
 
     Optional<Usuario> findByNombreUsuario(String nombreUsuario);
