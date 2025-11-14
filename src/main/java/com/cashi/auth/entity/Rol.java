@@ -54,7 +54,7 @@ public class Rol {
     private Set<Usuario> usuarios = new HashSet<>();
 
     // Relación con Asignaciones
-    @OneToMany(mappedBy = "rol", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "rol", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     @Builder.Default
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
