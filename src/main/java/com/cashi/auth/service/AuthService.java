@@ -6,6 +6,7 @@ import com.cashi.auth.dto.request.RefreshTokenRequest;
 import com.cashi.auth.dto.response.AuthResponse;
 import com.cashi.auth.dto.response.UsuarioResponse;
 import com.cashi.auth.entity.Rol;
+import com.cashi.auth.entity.RolAsignacion;
 import com.cashi.auth.entity.Token;
 import com.cashi.auth.entity.Usuario;
 import com.cashi.auth.repository.RolRepository;
