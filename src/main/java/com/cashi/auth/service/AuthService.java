@@ -282,6 +282,7 @@ public class AuthService {
                 .collect(Collectors.toSet());
 
         // Obtener asignación del rol (tenant/cartera/subcartera)
+        // Buscar la asignación más completa (la que tenga subPortfolioId no nulo)
         Long tenantId = null;
         Long portfolioId = null;
         Long subPortfolioId = null;
@@ -289,10 +290,19 @@ public class AuthService {
         if (!usuario.getRoles().isEmpty()) {
             Rol primerRol = usuario.getRoles().iterator().next();
             if (!primerRol.getAsignaciones().isEmpty()) {
-                RolAsignacion asignacion = primerRol.getAsignaciones().iterator().next();
+                // Buscar primero una asignación con subPortfolioId no nulo
+                RolAsignacion asignacion = primerRol.getAsignaciones().stream()
+                        .filter(a -> a.getSubPortfolioId() != null)
+                        .findFirst()
+                        .orElse(primerRol.getAsignaciones().iterator().next());
+
                 tenantId = asignacion.getTenantId();
                 portfolioId = asignacion.getPortfolioId();
                 subPortfolioId = asignacion.getSubPortfolioId();
+
+                System.out.println("=== DEBUG ASIGNACIÓN SELECCIONADA ===");
+                System.out.println("TenantId: " + tenantId + ", PortfolioId: " + portfolioId + ", SubPortfolioId: " + subPortfolioId);
+                System.out.println("=== FIN DEBUG ===");
             }
         }
 
