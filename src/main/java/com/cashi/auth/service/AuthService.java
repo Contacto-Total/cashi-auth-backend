@@ -152,15 +152,26 @@ public class AuthService {
             usuario = usuarioRepository.findByNombreUsuarioWithRoles(request.getNombreUsuario())
                     .orElseThrow(() -> new RuntimeException("Error recargando usuario"));
 
-            // Forzar inicialización de roles y permisos
+            // Forzar inicialización de roles, permisos y asignaciones
             Hibernate.initialize(usuario.getRoles());
-            usuario.getRoles().forEach(rol -> Hibernate.initialize(rol.getPermisos()));
+            usuario.getRoles().forEach(rol -> {
+                Hibernate.initialize(rol.getPermisos());
+                Hibernate.initialize(rol.getAsignaciones());
+            });
 
             // DEBUG: Verificar roles después de recarga
             System.out.println("=== DEBUG DESPUÉS DE RECARGA ===");
             System.out.println("Usuario: " + usuario.getNombreUsuario());
             System.out.println("Roles count: " + usuario.getRoles().size());
-            usuario.getRoles().forEach(rol -> System.out.println("  - Rol: " + rol.getNombreRol()));
+            usuario.getRoles().forEach(rol -> {
+                System.out.println("  - Rol: " + rol.getNombreRol());
+                System.out.println("    Asignaciones count: " + rol.getAsignaciones().size());
+                rol.getAsignaciones().forEach(asig -> {
+                    System.out.println("      - TenantId: " + asig.getTenantId() +
+                                       ", PortfolioId: " + asig.getPortfolioId() +
+                                       ", SubPortfolioId: " + asig.getSubPortfolioId());
+                });
+            });
             System.out.println("Authorities count: " + usuario.getAuthorities().size());
             usuario.getAuthorities().forEach(auth -> System.out.println("  - Authority: " + auth.getAuthority()));
             System.out.println("=== FIN DEBUG ===");
