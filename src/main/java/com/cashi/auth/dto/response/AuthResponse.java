@@ -18,6 +18,7 @@ public class AuthResponse {
     private String email;
     private String nombreCompleto;
     private String extensionSip; // Extensión SIP para FreeSWITCH
+    private String sipPassword; // Contraseña SIP para registro en FreeSWITCH
     private String accessToken;
     private String refreshToken;
     private String tipoToken;

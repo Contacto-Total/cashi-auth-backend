@@ -176,6 +176,10 @@ public class AuthService {
             usuario.getAuthorities().forEach(auth -> System.out.println("  - Authority: " + auth.getAuthority()));
             System.out.println("=== FIN DEBUG ===");
             
+            // Single session: revocar tokens anteriores antes de crear nuevos
+            // Si el usuario tenía sesión en otro navegador/dispositivo, esa sesión se invalida
+            tokenService.revocarTodosLosTokensDelUsuario(usuario.getIdUsuario());
+
             // Generar tokens
             String accessToken = jwtUtil.generateAccessToken(usuario);
             String refreshToken = jwtUtil.generateRefreshToken(usuario);
@@ -312,6 +316,7 @@ public class AuthService {
                 .email(usuario.getEmail())
                 .nombreCompleto(usuario.getNombreCompleto())
                 .extensionSip(usuario.getExtensionSip())
+                .sipPassword(usuario.getSipPassword())
                 .accessToken(accessToken)
                 .refreshToken(refreshToken)
                 .tipoToken("Bearer")

@@ -60,6 +60,14 @@ public class UsuarioManagementController {
         return ResponseEntity.ok(response);
     }
 
+    @PostMapping("/{id}/regenerar-sip-password")
+    @Operation(summary = "Regenerar contraseña SIP del usuario")
+    public ResponseEntity<UsuarioResponse> regenerarSipPassword(@PathVariable Long id) {
+        log.info("Solicitud para regenerar SIP password del usuario con ID: {}", id);
+        UsuarioResponse response = usuarioManagementService.regenerarSipPassword(id);
+        return ResponseEntity.ok(response);
+    }
+
     @DeleteMapping("/{id}")
     @Operation(summary = "Eliminar usuario")
     public ResponseEntity<Map<String, String>> eliminarUsuario(@PathVariable Long id) {

@@ -31,5 +31,6 @@ public class UsuarioResponse {
     private Set<Long> roleIds;
     private Set<String> roleNombres;
     private Set<String> permisos; // Permisos del usuario (para autenticación)
+    private String sipPassword; // Contraseña SIP para FreeSWITCH
     private String generatedPassword; // Solo se devuelve al crear el usuario
 }

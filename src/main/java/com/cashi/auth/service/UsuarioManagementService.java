@@ -27,6 +27,8 @@ public class UsuarioManagementService {
 
     private static final String CHARACTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%&*";
     private static final int PASSWORD_LENGTH = 12;
+    private static final String SIP_CHARACTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+    private static final int SIP_PASSWORD_LENGTH = 12;
 
     @Transactional(readOnly = true)
     public List<UsuarioResponse> obtenerTodosUsuarios() {
@@ -60,6 +62,12 @@ public class UsuarioManagementService {
                 request.getSegundoApellido()
         );
 
+        // Generar contraseña SIP si tiene extensión
+        String sipPassword = null;
+        if (request.getExtensionSip() != null && !request.getExtensionSip().trim().isEmpty()) {
+            sipPassword = generarSipPassword();
+        }
+
         // Crear entidad Usuario
         Usuario usuario = Usuario.builder()
                 .primerNombre(request.getPrimerNombre())
@@ -72,6 +80,7 @@ public class UsuarioManagementService {
                 .contrasena(passwordEncoder.encode(passwordGenerada))
                 .telefono(request.getTelefono())
                 .extensionSip(request.getExtensionSip())
+                .sipPassword(sipPassword)
                 .activo(request.getActivo())
                 .build();
 
@@ -120,7 +129,19 @@ public class UsuarioManagementService {
         }
 
         usuario.setTelefono(request.getTelefono());
+
+        // Si se asigna extensión SIP y no tenía sipPassword, generar una
+        String oldExtension = usuario.getExtensionSip();
         usuario.setExtensionSip(request.getExtensionSip());
+        if (request.getExtensionSip() != null && !request.getExtensionSip().trim().isEmpty()
+                && usuario.getSipPassword() == null) {
+            usuario.setSipPassword(generarSipPassword());
+        }
+        // Si se quita la extensión SIP, limpiar sipPassword
+        if (request.getExtensionSip() == null || request.getExtensionSip().trim().isEmpty()) {
+            usuario.setSipPassword(null);
+        }
+
         usuario.setActivo(request.getActivo());
 
         // Actualizar roles
@@ -129,6 +150,20 @@ public class UsuarioManagementService {
             usuario.setRoles(roles);
         }
 
+        Usuario usuarioActualizado = usuarioRepository.save(usuario);
+        return convertirAResponse(usuarioActualizado);
+    }
+
+    @Transactional
+    public UsuarioResponse regenerarSipPassword(Long id) {
+        Usuario usuario = usuarioRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado con ID: " + id));
+
+        if (usuario.getExtensionSip() == null || usuario.getExtensionSip().trim().isEmpty()) {
+            throw new RuntimeException("El usuario no tiene extensión SIP asignada");
+        }
+
+        usuario.setSipPassword(generarSipPassword());
         Usuario usuarioActualizado = usuarioRepository.save(usuario);
         return convertirAResponse(usuarioActualizado);
     }
@@ -161,6 +196,7 @@ public class UsuarioManagementService {
                 .email(usuario.getEmail())
                 .telefono(usuario.getTelefono())
                 .extensionSip(usuario.getExtensionSip())
+                .sipPassword(usuario.getSipPassword())
                 .activo(usuario.getActivo())
                 .verificadoEmail(usuario.getVerificadoEmail())
                 .fechaCreacion(usuario.getFechaCreacion())
@@ -194,6 +230,16 @@ public class UsuarioManagementService {
         }
 
         return nombreCompleto.toString();
+    }
+
+    private String generarSipPassword() {
+        SecureRandom random = new SecureRandom();
+        StringBuilder password = new StringBuilder(SIP_PASSWORD_LENGTH);
+        for (int i = 0; i < SIP_PASSWORD_LENGTH; i++) {
+            int randomIndex = random.nextInt(SIP_CHARACTERS.length());
+            password.append(SIP_CHARACTERS.charAt(randomIndex));
+        }
+        return password.toString();
     }
 
     private String generarPasswordAleatoria() {

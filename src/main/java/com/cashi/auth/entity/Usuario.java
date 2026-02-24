@@ -55,6 +55,9 @@ public class Usuario implements UserDetails {
     @Column(name = "extension_sip", length = 20)
     private String extensionSip;
 
+    @Column(name = "sip_password", length = 20)
+    private String sipPassword;
+
     @Column(name = "activo", nullable = false)
     @Builder.Default
     private Boolean activo = true;
