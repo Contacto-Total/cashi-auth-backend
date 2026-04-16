@@ -93,8 +93,6 @@ public class JwtUtil {
                 .map(GrantedAuthority::getAuthority)
                 .collect(Collectors.toList()));
 
-        System.out.println("Roles en JWT: " + claims.get("roles"));
-        System.out.println("Permisos en JWT: " + claims.get("permisos"));
 
         // Obtener tiempo de expiración de la configuración (en segundos) y convertir a milisegundos
         Long expirationMs = getAccessTokenExpiration() * 1000;

@@ -276,8 +276,6 @@ public class AuthService {
                 .map(Rol::getNombreRol)
                 .collect(Collectors.toSet());
 
-        // DEBUG
-        System.out.println("Roles después del stream: " + roles);
         System.out.println("=== FIN DEBUG ===");
 
         Set<String> permisos = usuario.getAuthorities().stream()
