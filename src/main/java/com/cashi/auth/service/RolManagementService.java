@@ -41,8 +41,29 @@ public class RolManagementService {
         return convertirAResponse(rol);
     }
 
+    /**
+     * Toda asignación se guarda por subcartera, con su cliente y su cartera. Una fila de cliente
+     * o de cartera sin subcartera no se acepta: quien lee el alcance de un rol filtra por subcartera.
+     */
+    private void validarAsignaciones(Set<RolAsignacionRequest> asignaciones) {
+        if (asignaciones == null) {
+            return;
+        }
+        for (RolAsignacionRequest asignacion : asignaciones) {
+            boolean completa = RolAsignacion.TipoAsignacion.SUBCARTERA.name().equals(asignacion.getTipoAsignacion())
+                    && asignacion.getTenantId() != null
+                    && asignacion.getPortfolioId() != null
+                    && asignacion.getSubPortfolioId() != null;
+            if (!completa) {
+                throw new RuntimeException("Cada asignación del rol debe indicar cliente, cartera y subcartera");
+            }
+        }
+    }
+
     @Transactional
     public RolResponse crearRol(RolRequest request) {
+        validarAsignaciones(request.getAsignaciones());
+
         // Validar que el nombre del rol no exista
         if (rolRepository.findByNombreRol(request.getNombreRol()).isPresent()) {
             throw new RuntimeException("El nombre del rol ya existe");
@@ -82,6 +103,8 @@ public class RolManagementService {
 
     @Transactional
     public RolResponse actualizarRol(Long id, RolRequest request) {
+        validarAsignaciones(request.getAsignaciones());
+
         Rol rol = rolRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Rol no encontrado con ID: " + id));
 
