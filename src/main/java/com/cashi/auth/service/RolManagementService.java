@@ -41,13 +41,20 @@ public class RolManagementService {
         return convertirAResponse(rol);
     }
 
+    /** El rol que no se acota: es el único que se guarda sin asignaciones. */
+    private static final String ROL_SIN_LIMITE = "ADMIN";
+
     /**
-     * Toda asignación se guarda por subcartera, con su cliente y su cartera. Una fila de cliente
-     * o de cartera sin subcartera no se acepta: quien lee el alcance de un rol filtra por subcartera.
+     * Un rol se guarda con al menos una asignación, y toda asignación va por subcartera, con su
+     * cliente y su cartera. Una fila de cliente o de cartera sin subcartera no se acepta: quien
+     * lee el alcance de un rol filtra por subcartera.
      */
-    private void validarAsignaciones(Set<RolAsignacionRequest> asignaciones) {
-        if (asignaciones == null) {
-            return;
+    private void validarAsignaciones(String nombreRol, Set<RolAsignacionRequest> asignaciones) {
+        if (asignaciones == null || asignaciones.isEmpty()) {
+            if (ROL_SIN_LIMITE.equalsIgnoreCase(nombreRol)) {
+                return;
+            }
+            throw new RuntimeException("El rol debe tener al menos una subcartera asignada, con su cliente y su cartera");
         }
         for (RolAsignacionRequest asignacion : asignaciones) {
             boolean completa = RolAsignacion.TipoAsignacion.SUBCARTERA.name().equals(asignacion.getTipoAsignacion())
@@ -62,7 +69,7 @@ public class RolManagementService {
 
     @Transactional
     public RolResponse crearRol(RolRequest request) {
-        validarAsignaciones(request.getAsignaciones());
+        validarAsignaciones(request.getNombreRol(), request.getAsignaciones());
 
         // Validar que el nombre del rol no exista
         if (rolRepository.findByNombreRol(request.getNombreRol()).isPresent()) {
@@ -103,10 +110,9 @@ public class RolManagementService {
 
     @Transactional
     public RolResponse actualizarRol(Long id, RolRequest request) {
-        validarAsignaciones(request.getAsignaciones());
-
         Rol rol = rolRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Rol no encontrado con ID: " + id));
+        validarAsignaciones(rol.getNombreRol(), request.getAsignaciones());
 
         // Validar que el nombre del rol no exista en otro rol
         if (request.getNombreRol() != null && !request.getNombreRol().equalsIgnoreCase(rol.getNombreRol())) {
