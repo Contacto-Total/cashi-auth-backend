@@ -56,13 +56,9 @@ Servicio de autenticación centralizado para la plataforma Cashi.
 CREATE DATABASE cashi_auth_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 ```
 
-### 2. Configurar application.properties
+### 2. Configurar credenciales
 
-```properties
-spring.datasource.url=jdbc:mysql://localhost:3306/cashi_auth_db
-spring.datasource.username=root
-spring.datasource.password=root
-```
+Configura `DB_HOST`, `DB_PORT`, `DB_USERNAME` y `DB_PASSWORD` en `/etc/cashi/.env`.
 
 ### 3. Ejecutar aplicación
 

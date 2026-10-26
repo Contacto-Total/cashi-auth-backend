@@ -45,6 +45,7 @@ public class AuthService {
     private final JwtUtil jwtUtil;
     private final AuthenticationManager authenticationManager;
     private final TokenService tokenService;
+    private final InhabilitacionAccesoService inhabilitacionAcceso;
 
     @PersistenceContext
     private EntityManager entityManager;
@@ -142,6 +143,12 @@ public class AuthService {
                     )
             );
 
+            // Inhabilitado por RR.HH. (descanso, licencia o vacaciones): se corta
+            // aqui, antes de crear tokens, para que el intento no cuente como
+            // ingreso en la asistencia. Va despues de validar la contraseña para
+            // que el motivo solo lo vea el dueño de la cuenta.
+            inhabilitacionAcceso.exigirHabilitado(usuario.getIdUsuario());
+
             // Login exitoso - resetear intentos fallidos
             usuario.resetearIntentosFallidos();
             usuario.actualizarUltimoAcceso();
@@ -224,6 +231,10 @@ public class AuthService {
 
         // Obtener usuario
         Usuario usuario = refreshToken.getUsuario();
+
+        // Quien dejo la sesion abierta no sigue dentro si RR.HH. lo inhabilito:
+        // sin renovacion, el front cierra la sesion y vuelve al login.
+        inhabilitacionAcceso.exigirHabilitado(usuario.getIdUsuario());
 
         // Generar nuevo access token
         String nuevoAccessToken = jwtUtil.generateAccessToken(usuario);
