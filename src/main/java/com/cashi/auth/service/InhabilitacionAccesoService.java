@@ -17,7 +17,8 @@ import java.util.Locale;
 
 /**
  * Si RR.HH. inhabilito a un usuario: un descanso o licencia registrado en
- * Asistencia, o sus vacaciones. Ambas tablas viven en cashi_discador_db.
+ * Asistencia, sus vacaciones, o un dia «Sin asignacion» del calendario de su
+ * subcartera. Todo vive en cashi_discador_db.
  *
  * Se revisa al iniciar sesion y al renovar el token, ANTES de crear la sesion:
  * el discador toma la entrada del dia del primer token, y un ingreso
@@ -90,6 +91,32 @@ public class InhabilitacionAccesoService {
                 idUsuario, java.sql.Date.valueOf(ahora.toLocalDate()), java.sql.Date.valueOf(ahora.toLocalDate()));
         if (!vacaciones.isEmpty()) {
             return "Estás de vacaciones hasta el " + vacaciones.get(0).format(DIA) + "." + CIERRE;
+        }
+
+        // Dia «Sin asignacion» del Calendario de Asistencia para su subcartera de
+        // hoy. Como en el calendario, el dia marcado para la subcartera pisa al
+        // de toda la empresa: si la subcartera tiene otro tipo ese dia, no bloquea.
+        List<Integer> sinAsignacion = jdbc.query("""
+                SELECT 1
+                FROM cashi_discador_db.personal p
+                JOIN cashi_discador_db.personal_subcartera ps
+                  ON ps.id_personal = p.id
+                 AND ps.fecha_desde <= ? AND (ps.fecha_hasta IS NULL OR ps.fecha_hasta >= ?)
+                JOIN cashi_discador_db.dia_calendario d
+                  ON d.fecha = ?
+                 AND (d.id_subcartera = ps.id_subcartera
+                      OR (d.id_subcartera IS NULL AND NOT EXISTS (
+                            SELECT 1 FROM cashi_discador_db.dia_calendario d2
+                            WHERE d2.fecha = d.fecha AND d2.id_subcartera = ps.id_subcartera)))
+                JOIN cashi_discador_db.tipo_dia t ON t.id = d.id_tipo_dia AND t.codigo = 'SIN_ASIGNACION'
+                WHERE p.id_usuario = ?
+                LIMIT 1
+                """,
+                (rs, n) -> 1,
+                java.sql.Date.valueOf(ahora.toLocalDate()), java.sql.Date.valueOf(ahora.toLocalDate()),
+                java.sql.Date.valueOf(ahora.toLocalDate()), idUsuario);
+        if (!sinAsignacion.isEmpty()) {
+            return "Hoy " + ahora.toLocalDate().format(DIA) + " no tienes cartera asignada." + CIERRE;
         }
         return null;
     }
